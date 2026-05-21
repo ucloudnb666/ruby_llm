@@ -11,7 +11,7 @@ module RubyLLM
       include Astraflow::Models
 
       def api_base
-        if @config.astraflow_cn_api_key && !@config.astraflow_cn_api_key.to_s.empty?
+        if cn_mode?
           @config.astraflow_api_base || 'https://api.modelverse.cn/v1'
         else
           @config.astraflow_api_base || 'https://api-us-ca.umodelverse.ai/v1'
@@ -19,15 +19,20 @@ module RubyLLM
       end
 
       def headers
-        api_key = if @config.astraflow_cn_api_key && !@config.astraflow_cn_api_key.to_s.empty?
-                    @config.astraflow_cn_api_key
-                  else
-                    @config.astraflow_api_key
-                  end
         {
           'Authorization' => "Bearer #{api_key}",
           'Content-Type' => 'application/json'
         }
+      end
+
+      private
+
+      def cn_mode?
+        @config.astraflow_cn_api_key.to_s != ''
+      end
+
+      def api_key
+        cn_mode? ? @config.astraflow_cn_api_key : @config.astraflow_api_key
       end
 
       class << self
